@@ -1,199 +1,208 @@
+<div align="center">
+
 # ML Pipeline with DVC
 
-An end-to-end, reproducible Natural Language Processing (NLP) classification pipeline built with Python and [DVC](https://dvc.org/). The project demonstrates how to move from a notebook-based experiment toward a modular and maintainable machine learning workflow.
+### From a notebook experiment to a reproducible machine learning system.
 
-> **Project goal:** The objective of this project is not to build a perfect model. It is to understand how an industry-style machine learning pipeline is organized, versioned, reproduced, and improved over time.
+[![Python](https://img.shields.io/badge/Python-3.9%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![DVC](https://img.shields.io/badge/DVC-Pipeline-945DD6?style=for-the-badge&logo=dvc&logoColor=white)](https://dvc.org/)
+[![Scikit-learn](https://img.shields.io/badge/Scikit--learn-ML-F7931E?style=for-the-badge&logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
+[![License](https://img.shields.io/badge/License-MIT-2ea44f?style=for-the-badge)](LICENSE)
 
-## Overview
+**An end-to-end NLP classification project focused on reproducibility, pipeline thinking, and practical MLOps foundations.**
 
-This project performs binary sentiment classification on tweets. It classifies tweets into two categories:
+[Explore the repository](https://github.com/Div7anshKushwaha/ML-Pipeline-DVC) · [View the pipeline file](dvc.yaml) · [Read the roadmap](#roadmap)
 
-- `neutral` → `1`
+</div>
 
-- `sadness` → `0`
+---
 
-The workflow is divided into five DVC stages:
+## The idea behind this project
 
+> **The goal is not to build the perfect model. The goal is to understand how real machine learning projects are structured, reproduced, and improved.**
+
+A model inside a notebook is only one part of a machine learning project. This repository focuses on the engineering layer around the model: versioned data, explicit dependencies, configurable parameters, reproducible stages, and trackable evaluation results.
+
+This is the first step in an ongoing MLOps journey. The pipeline is intentionally simple so that the workflow is easy to inspect, reproduce, and extend with tools such as MLflow, Docker, and GitHub Actions.
+
+## What is inside?
+
+| Area | Implementation |
+| --- | --- |
+| Problem | Binary tweet sentiment classification |
+| Text representation | Bag of Words with `CountVectorizer` |
+| Model | Scikit-learn `GradientBoostingClassifier` |
+| Pipeline orchestration | DVC |
+| Configuration | `params.yaml` |
+| Metrics | `reports/metrics.json` |
+| Artifact tracking | DVC metadata and lock file |
+| Code quality | Modular functions, type hints, logging, and exception handling |
+
+## Pipeline at a glance
+
+```mermaid
+flowchart LR
+    A[(Raw tweets)] --> B[Data ingestion]
+    B --> C[Text preprocessing]
+    C --> D[Feature engineering\nBag of Words]
+    D --> E[Model building\nGradient Boosting]
+    E --> F[Model evaluation]
+    F --> G[(reports/metrics.json)]
+
+    P[(params.yaml)] -. configuration .-> B
+    P -. configuration .-> D
+    P -. configuration .-> E
+
+    style A fill:#172554,stroke:#60a5fa,color:#fff
+    style G fill:#14532d,stroke:#4ade80,color:#fff
+    style P fill:#422006,stroke:#fbbf24,color:#fff
 ```
-Raw dataset
-    ↓
-Data ingestion
-    ↓
-Text preprocessing
-    ↓
-Feature engineering with Bag of Words
-    ↓
-Gradient Boosting model training
-    ↓
-Model evaluation
-    ↓
-reports/metrics.json
-```
 
-The complete pipeline can be reproduced with one command:
+The complete workflow is defined in `dvc.yaml` and reproduced with:
 
 ```bash
 dvc repro
 ```
 
-DVC uses the pipeline definition, dependencies, parameters, and lock file to determine which stages need to run.
+DVC checks dependencies, parameters, outputs, and the lock file, then reruns only the stages affected by a change.
 
-## Why DVC?
+## The five stages
 
-A machine learning project includes more than source code. It also depends on datasets, generated features, trained models, parameters, and evaluation results. DVC helps connect these dependencies and makes experiments reproducible.
+### 01 · Data ingestion
 
-This project uses DVC to:
+Loads the raw training and test data and writes the DVC-tracked files under `data/raw/`.
 
-- Define the pipeline in `dvc.yaml`.
+### 02 · Text preprocessing
 
-- Lock reproducible stage states in `dvc.lock`.
+Cleans the tweet text by lowercasing it, removing URLs and mentions, removing hashtag symbols and non-alphabetic characters, normalizing whitespace, and dropping empty records.
 
-- Track configurable parameters through `params.yaml`.
+### 03 · Feature engineering
 
-- Store evaluation results in `reports/metrics.json`.
+Transforms the cleaned text into numerical features with Scikit-learn's `CountVectorizer`. The vectorizer is fitted only on the training data before being applied to the test data, which prevents test-set vocabulary leakage.
 
-- Compare results across Git revisions with `dvc metrics diff`.
+### 04 · Model building
 
-- Visualize stage dependencies with `dvc dag`.
-
-A DVC remote is not configured yet. Therefore, the current workflow reproduces the pipeline from the files available in the repository. A remote can be added later for sharing datasets and model artifacts across environments.
-
-## Pipeline stages
-
-### 1. Data ingestion
-
-The ingestion stage loads the raw train and test datasets and prepares the data for subsequent stages.
-
-### 2. Text preprocessing
-
-The preprocessing stage cleans tweet text by:
-
-- Converting text to lowercase.
-
-- Removing URLs and user mentions.
-
-- Removing hashtag symbols.
-
-- Removing non-alphabetic characters.
-
-- Normalizing whitespace.
-
-- Removing empty records.
-
-For example:
-
-```
-Before:  Check this amazing product! https://example.com @user #awesome
-After:   check this amazing product awesome
-```
-
-### 3. Feature engineering
-
-The project converts the cleaned text into numerical features using Scikit-learn's `CountVectorizer`. The vectorizer is fitted only on the training data and then applied to the test data. This prevents the test set from influencing the training vocabulary.
-
-The maximum number of features is controlled through `params.yaml`.
-
-### 4. Model training
-
-The current classifier is a Scikit-learn `GradientBoostingClassifier` with configurable training parameters.
-
-The trained model is serialized as a pickle artifact at:
+Trains a `GradientBoostingClassifier` and stores the generated model at:
 
 ```
 models/model.pkl
 ```
 
-### 5. Model evaluation
+### 05 · Model evaluation
 
-The evaluation stage calculates the following metrics:
-
-- Accuracy
-
-- Precision
-
-- Recall
-
-- ROC-AUC
-
-The results are written to:
+Calculates accuracy, precision, recall, and ROC-AUC. The results are written to:
 
 ```
 reports/metrics.json
 ```
 
-## Current metrics
+## Current experiment snapshot
 
-The following values are a snapshot of the current experiment. They may change when the parameters or data are updated.
+These values are a snapshot of the current run. They are included to demonstrate metric tracking, not to claim a production-ready model.
 
-| Metric | Value |
+| Metric | Score |
 | --- | --- |
-| Accuracy | 0.6578 |
-| Precision | 0.6697 |
-| Recall | 0.9031 |
-| ROC-AUC | 0.6549 |
+| Accuracy | **0.6578** |
+| Precision | **0.6697** |
+| Recall | **0.9031** |
+| ROC-AUC | **0.6549** |
 
-The purpose of these metrics is to demonstrate experiment tracking and comparison. They are not intended to represent a final production model.
+The model can be improved later through better preprocessing, feature representations, model selection, hyperparameter tuning, and validation strategies. For this project, the reproducible workflow is the primary result.
 
-## Project structure
+## Repository structure
 
 ```
 ML-Pipeline-DVC/
-├── .dvc/
-│   ├── .gitignore
-│   └── config
-├── docs/
-│   ├── Makefile
-│   ├── commands.rst
-│   ├── conf.py
-│   ├── getting-started.rst
-│   ├── index.rst
-│   └── make.bat
-├── notebooks/
-│   └── .gitkeep
-├── references/
-│   └── .gitkeep
+├── .dvc/                         # DVC configuration
+├── docs/                         # Project documentation source files
+├── notebooks/                    # Reserved for exploratory notebooks
+├── references/                   # Reserved for reference material
 ├── reports/
-│   ├── figures/
-│   │   └── .gitkeep
-│   ├── .gitkeep
-│   └── metrics.json
+│   ├── figures/                  # Reserved for generated visualizations
+│   └── metrics.json              # Evaluation metrics
 ├── src/
 │   ├── data/
-│   │   ├── .gitkeep
-│   │   ├── data_ingestion.py
-│   │   └── data_preprocessing.py
+│   │   ├── data_ingestion.py     # Data ingestion stage
+│   │   └── data_preprocessing.py # Text cleaning stage
 │   ├── features/
-│   │   ├── .gitkeep
 │   │   └── feature_engineering.py
 │   ├── models/
-│   │   ├── .gitkeep
-│   │   ├── model_building.py
-│   │   └── model_evaluation.py
-│   └── visualization/
-│       └── .gitkeep
+│   │   ├── model_building.py     # Model training stage
+│   │   └── model_evaluation.py   # Evaluation stage
+│   └── visualization/            # Reserved for visualization code
+├── data/                         # DVC-generated data artifacts
+├── models/                       # DVC-generated model artifacts
+├── dvc.yaml                      # Pipeline stages and dependencies
+├── dvc.lock                      # Locked pipeline state
+├── params.yaml                   # Experiment parameters
+├── requirements.txt              # Python dependencies
+├── setup.py                      # Package configuration
+├── Makefile                      # Project utility commands
+├── test_environment.py           # Environment test
+├── tox.ini                       # Tox configuration
 ├── .dvcignore
 ├── .gitignore
-├── dvc.lock
-├── dvc.yaml
 ├── LICENSE
-├── Makefile
-├── params.yaml
-├── README.md
-├── requirements.txt
-├── setup.py
-├── test_environment.py
-└── tox.ini
+└── README.md
 ```
 
-The repository follows a structured data-science project layout. Data-processing code is organized under `src/data`, feature engineering under `src/features`, and model training and evaluation under `src/models`. The `reports` directory stores evaluation outputs, while `docs`, `notebooks`, `references`, and `src/visualization` provide locations for future documentation, analysis, references, and visualizations.
+The source tree and configuration files are committed to Git. The `data/` and `models/` directories contain artifacts generated by the DVC pipeline and may not appear as populated directories in the GitHub tree until the pipeline is executed.
 
-The raw datasets and generated model artifacts are managed through the DVC workflow and are not represented as committed files in the GitHub tree. The tracked evaluation file is located at `reports/metrics.json`.
+## Quick start
 
-## Configuration
+### 1. Clone the repository
 
-Pipeline and model parameters are stored in `params.yaml`, so experiments can be run without changing the Python source code.
+```bash
+git clone https://github.com/Div7anshKushwaha/ML-Pipeline-DVC.git
+cd ML-Pipeline-DVC
+```
 
-The current configuration includes:
+### 2. Create a virtual environment
+
+**macOS / Linux**
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+**Windows**
+
+```bash
+python -m venv venv
+venv\\Scripts\\activate
+```
+
+### 3. Install the project
+
+```bash
+pip install -r requirements.txt
+pip install dvc
+```
+
+You can also install the package in editable mode:
+
+```bash
+pip install -e .
+```
+
+### 4. Reproduce the pipeline
+
+```bash
+dvc repro
+```
+
+### 5. Inspect the result
+
+```bash
+dvc metrics show
+dvc dag
+dvc status
+```
+
+## Experiment with parameters
+
+The pipeline parameters live in `params.yaml`:
 
 ```yaml
 data_ingestion:
@@ -207,7 +216,7 @@ model_building:
   n_estimators: 100
 ```
 
-For example, the model parameters can be changed as follows:
+Change a parameter without touching the Python source code:
 
 ```yaml
 model_building:
@@ -215,173 +224,93 @@ model_building:
   n_estimators: 200
 ```
 
-Run the pipeline again after changing the parameters:
+Then reproduce the workflow:
 
 ```bash
 dvc repro
-```
-
-DVC will rerun only the stages affected by the parameter change.
-
-## Getting started
-
-### Prerequisites
-
-Install the following tools before starting:
-
-- Python 3.9 or newer
-
-- Git
-
-- DVC
-
-### Clone the repository
-
-```bash
-git clone https://github.com/Div7anshKushwaha/ML-Pipeline-DVC.git
-cd ML-Pipeline-DVC
-```
-
-### Create and activate a virtual environment
-
-On Windows:
-
-```bash
-python -m venv venv
-venv\\Scripts\\activate
-```
-
-On macOS or Linux:
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-Install DVC if it is not already available:
-
-```bash
-pip install dvc
-```
-
-### Reproduce the pipeline
-
-```bash
-dvc repro
-```
-
-### Inspect the results
-
-Display the current metrics:
-
-```bash
 dvc metrics show
 ```
 
-Visualize the pipeline DAG:
-
-```bash
-dvc dag
-```
-
-Check the pipeline status:
-
-```bash
-dvc status
-```
-
-Compare metrics between Git revisions:
+Compare results across Git revisions with:
 
 ```bash
 dvc metrics diff
 ```
 
-## Useful DVC commands
+## Useful commands
 
-| Command | Purpose |
+| Command | What it does |
 | --- | --- |
-| `dvc repro` | Reproduce the pipeline and rerun changed stages |
-| `dvc dag` | Display the pipeline dependency graph |
-| `dvc metrics show` | Display tracked metrics |
-| `dvc metrics diff` | Compare metrics across revisions |
-| `dvc status` | Check whether the pipeline is up to date |
-| `dvc push` | Upload DVC-tracked artifacts after configuring a remote |
-| `dvc pull` | Download artifacts from a configured remote |
+| `dvc repro` | Reproduces the pipeline and reruns changed stages |
+| `dvc dag` | Displays the pipeline dependency graph |
+| `dvc metrics show` | Shows the current evaluation metrics |
+| `dvc metrics diff` | Compares metrics between revisions |
+| `dvc status` | Checks whether the pipeline is up to date |
+| `dvc push` | Uploads artifacts after a DVC remote is configured |
+| `dvc pull` | Downloads artifacts from a configured DVC remote |
 
-## Reproducibility workflow
+> **Note:** A DVC remote is not configured yet. `dvc push` and `dvc pull` will become part of the workflow after a remote storage location is added.
 
-A typical experiment follows these steps:
+## Reproducibility loop
 
-1. Change a parameter in `params.yaml`.
+```
+Change params.yaml
+       ↓
+Run dvc repro
+       ↓
+Review reports/metrics.json
+       ↓
+Run dvc metrics diff
+       ↓
+Commit the experiment to Git
+```
 
-1. Run `dvc repro`.
+This loop makes it possible to understand what changed, reproduce previous states, and compare experiments without manually managing generated files.
 
-1. Review the updated values in `reports/metrics.json`.
+## Roadmap
 
-1. Compare the results with `dvc metrics diff`.
+This project will grow in stages:
 
-1. Commit the source code, parameter changes, DVC metadata, and metrics to Git.
+- [ ] Configure a DVC remote for shared artifacts
 
-1. Use the Git history to reproduce or compare previous experiments.
+- [ ] Add MLflow experiment tracking
 
-This workflow separates experimentation from manual file management and makes the impact of parameter changes easier to inspect.
+- [ ] Add unit and integration tests
 
-## Technology stack
+- [ ] Add data and model validation
 
-| Technology | Role |
-| --- | --- |
-| Python | Pipeline implementation |
-| Pandas | Data loading and manipulation |
-| Scikit-learn | Feature engineering, model training, and evaluation |
-| PyYAML | Parameter configuration |
-| DVC | Data, artifact, and pipeline versioning |
-| Git | Source-code version control |
-| GitHub | Repository hosting |
+- [ ] Dockerize the training and serving environments
 
-## Limitations and next steps
+- [ ] Add GitHub Actions CI/CD
 
-This repository is the first step in an ongoing MLOps learning project. The current model and pipeline are intentionally simple so that the focus remains on understanding reproducible workflow design.
+- [ ] Build a model-serving API
 
-Planned improvements include:
+- [ ] Deploy the service to the cloud
 
-- Configure a DVC remote for shared data and model artifacts.
+- [ ] Add monitoring and drift detection
 
-- Add MLflow for experiment tracking.
+- [ ] Compare additional models and feature representations
 
-- Add automated unit and integration tests.
+## Takeaway
 
-- Add data and model validation.
+The most important lesson from this project is simple:
 
-- Dockerize the training and serving environments.
+> **Machine learning engineering is not only about training a model. It is about building a system that others can reproduce, inspect, maintain, and improve.**
 
-- Add GitHub Actions for continuous integration and continuous delivery.
-
-- Build a model-serving API.
-
-- Deploy the service to the cloud.
-
-- Add production monitoring and drift detection.
-
-- Compare additional models and feature representations.
-
-## Learning objective
-
-The central lesson from this project is that machine learning engineering is not only about training a model. It is also about building systems that other people can reproduce, inspect, maintain, and improve.
-
-This repository represents a transition from a standalone notebook toward a versioned ML workflow. The project will continue to evolve as new MLOps tools and production practices are added.
+This repository is a foundation, not a finished product. Every future improvement—better experiments, stronger validation, automated deployment, and monitoring—will build on the same reproducible pipeline.
 
 ## Author
 
 **Divyansh Kushwaha**
 BS in Data Science and Applications, IIT Madras
 
-GitHub: [Div7anshKushwaha](https://github.com/Div7anshKushwaha)
+- GitHub: [@Div7anshKushwaha](https://github.com/Div7anshKushwaha)
+
+- Repository: [ML-Pipeline-DVC](https://github.com/Div7anshKushwaha/ML-Pipeline-DVC)
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
 ## References
 
@@ -391,16 +320,6 @@ GitHub: [Div7anshKushwaha](https://github.com/Div7anshKushwaha)
 
 [3]: https://docs.python.org/3/ "Python Documentation"
 
-[4]: https://git-scm.com/doc "Git Documentation"
+[4]: https://pandas.pydata.org/docs/ "Pandas Documentation"
 
-[5]: https://pandas.pydata.org/docs/ "Pandas Documentation"
-
-[6]: https://github.com/Div7anshKushwaha/ML-Pipeline-DVC "ML-Pipeline-DVC Repository"
-
-## License
-
-This project is licensed under the terms included in the [LICENSE](LICENSE) file.
-
-## Repository
-
-[View the project on GitHub](https://github.com/Div7anshKushwaha/ML-Pipeline-DVC)
+[1]: # "[2] [3] [4]"
