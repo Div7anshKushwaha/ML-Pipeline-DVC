@@ -1,6 +1,7 @@
 import json
 import logging
 import pickle
+from pathlib import Path
 
 import pandas as pd
 
@@ -192,13 +193,20 @@ def calculate_metrics(
 
 def save_metrics(
     metrics: dict,
-    output_path: str = "metrics.json"
+    output_path: str = "reports/metrics.json"
 ) -> None:
     """
     Save evaluation metrics to a JSON file.
     """
     try:
-        with open(output_path, "w") as file:
+        output_file = Path(output_path)
+
+        output_file.parent.mkdir(
+            parents=True,
+            exist_ok=True
+        )
+
+        with open(output_file, "w") as file:
             json.dump(
                 metrics,
                 file,
