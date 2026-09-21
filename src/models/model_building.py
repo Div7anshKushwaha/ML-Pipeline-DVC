@@ -48,18 +48,18 @@ def load_training_data(
     file_path: str
 ) -> pd.DataFrame:
     """
-    Load feature-engineered training data.
+    Load TF-IDF feature-engineered training data.
     """
     try:
         logger.info(
-            "Loading training data from: %s",
+            "Loading TF-IDF training data from: %s",
             file_path
         )
 
         train_data = pd.read_csv(file_path)
 
         logger.info(
-            "Training data loaded successfully. Shape: %s",
+            "TF-IDF training data loaded successfully. Shape: %s",
             train_data.shape
         )
 
@@ -67,14 +67,14 @@ def load_training_data(
 
     except FileNotFoundError:
         logger.exception(
-            "Training data file not found: %s",
+            "TF-IDF training data file not found: %s",
             file_path
         )
         raise
 
     except Exception:
         logger.exception(
-            "Failed to load training data."
+            "Failed to load TF-IDF training data."
         )
         raise
 
@@ -93,7 +93,7 @@ def prepare_training_data(
         y_train = train_data["sentiment"]
 
         logger.info(
-            "Training features shape: %s",
+            "Training TF-IDF features shape: %s",
             X_train.shape
         )
 
@@ -202,9 +202,9 @@ def main() -> None:
             "model_building"
         ]["n_estimators"]
 
-        # Load training data
+        # Load TF-IDF training data
         train_data = load_training_data(
-            "data/features/train_features.csv"
+            "data/features/train_tfidf.csv"
         )
 
         # Prepare training data
@@ -224,7 +224,7 @@ def main() -> None:
         save_model(model)
 
         logger.info(
-            "Model building pipeline "
+            "TF-IDF model building pipeline "
             "completed successfully!"
         )
 

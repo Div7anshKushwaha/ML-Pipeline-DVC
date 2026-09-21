@@ -4,7 +4,7 @@ import logging
 import pandas as pd
 import yaml
 
-from sklearn.feature_extraction.text import CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 
 # Configure logging
@@ -78,18 +78,18 @@ def load_data(
         raise
 
 
-def create_bow_features(
+def create_tfidf_features(
     train_data: pd.DataFrame,
     test_data: pd.DataFrame,
     max_features: int
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
-    Create Bag-of-Words features using CountVectorizer.
+    Create TF-IDF features using TfidfVectorizer.
     """
 
     try:
         logger.info(
-            "Creating Bag-of-Words features with max_features=%d",
+            "Creating TF-IDF features with max_features=%d",
             max_features
         )
 
@@ -100,30 +100,37 @@ def create_bow_features(
         X_test = test_data["content"]
         y_test = test_data["sentiment"]
 
-        # Create vectorizer
-        vectorizer = CountVectorizer(
+        # Create TF-IDF vectorizer
+        vectorizer = TfidfVectorizer(
             max_features=max_features
         )
 
         # Fit ONLY on training data
-        X_train_bow = vectorizer.fit_transform(X_train)
+        X_train_tfidf = vectorizer.fit_transform(X_train)
 
         # Transform test data using training vocabulary
-        X_test_bow = vectorizer.transform(X_test)
+        X_test_tfidf = vectorizer.transform(X_test)
 
         logger.info(
-            "BoW transformation completed."
+            "TF-IDF transformation completed."
+        )
+
+        logger.info(
+            "Vocabulary size: %d",
+            len(vectorizer.get_feature_names_out())
         )
 
         # Convert sparse matrices to DataFrames
+        feature_names = vectorizer.get_feature_names_out()
+
         X_train_df = pd.DataFrame(
-            X_train_bow.toarray(),
-            columns=vectorizer.get_feature_names_out()
+            X_train_tfidf.toarray(),
+            columns=feature_names
         )
 
         X_test_df = pd.DataFrame(
-            X_test_bow.toarray(),
-            columns=vectorizer.get_feature_names_out()
+            X_test_tfidf.toarray(),
+            columns=feature_names
         )
 
         # Add target column
@@ -148,7 +155,7 @@ def create_bow_features(
 
     except Exception:
         logger.exception(
-            "Failed during feature engineering."
+            "Failed during TF-IDF feature engineering."
         )
         raise
 
@@ -158,7 +165,7 @@ def save_features(
     test_features: pd.DataFrame
 ) -> None:
     """
-    Save feature-engineered training and testing data.
+    Save TF-IDF feature-engineered training and testing data.
     """
 
     try:
@@ -168,28 +175,28 @@ def save_features(
         )
 
         train_features.to_csv(
-            "data/features/train_features.csv",
+            "data/features/train_tfidf.csv",
             index=False
         )
 
         test_features.to_csv(
-            "data/features/test_features.csv",
+            "data/features/test_tfidf.csv",
             index=False
         )
 
         logger.info(
-            "Training features saved to "
-            "data/features/train_features.csv"
+            "Training TF-IDF features saved to "
+            "data/features/train_tfidf.csv"
         )
 
         logger.info(
-            "Testing features saved to "
-            "data/features/test_features.csv"
+            "Testing TF-IDF features saved to "
+            "data/features/test_tfidf.csv"
         )
 
     except Exception:
         logger.exception(
-            "Failed to save feature-engineered data."
+            "Failed to save TF-IDF feature-engineered data."
         )
         raise
 
@@ -222,8 +229,8 @@ def main() -> None:
             test_path
         )
 
-        # Create BoW features
-        train_features, test_features = create_bow_features(
+        # Create TF-IDF features
+        train_features, test_features = create_tfidf_features(
             train_data,
             test_data,
             max_features
@@ -236,7 +243,7 @@ def main() -> None:
         )
 
         logger.info(
-            "Feature engineering pipeline "
+            "TF-IDF feature engineering pipeline "
             "completed successfully!"
         )
 

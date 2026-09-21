@@ -26,18 +26,18 @@ def load_test_data(
     file_path: str
 ) -> pd.DataFrame:
     """
-    Load feature-engineered test data.
+    Load TF-IDF feature-engineered test data.
     """
     try:
         logger.info(
-            "Loading test data from: %s",
+            "Loading TF-IDF test data from: %s",
             file_path
         )
 
         test_data = pd.read_csv(file_path)
 
         logger.info(
-            "Test data loaded successfully. Shape: %s",
+            "TF-IDF test data loaded successfully. Shape: %s",
             test_data.shape
         )
 
@@ -45,14 +45,14 @@ def load_test_data(
 
     except FileNotFoundError:
         logger.exception(
-            "Test data file not found: %s",
+            "TF-IDF test data file not found: %s",
             file_path
         )
         raise
 
     except Exception:
         logger.exception(
-            "Failed to load test data."
+            "Failed to load TF-IDF test data."
         )
         raise
 
@@ -71,7 +71,7 @@ def prepare_test_data(
         y_test = test_data["sentiment"]
 
         logger.info(
-            "Test features shape: %s",
+            "Test TF-IDF features shape: %s",
             X_test.shape
         )
 
@@ -141,7 +141,7 @@ def calculate_metrics(
     """
     try:
         logger.info(
-            "Generating predictions on test data."
+            "Generating predictions on TF-IDF test data."
         )
 
         # Generate predictions
@@ -231,9 +231,9 @@ def main() -> None:
     Execute the complete model evaluation pipeline.
     """
     try:
-        # Load test data
+        # Load TF-IDF test data
         test_data = load_test_data(
-            "data/features/test_features.csv"
+            "data/features/test_tfidf.csv"
         )
 
         # Prepare test data
@@ -257,7 +257,7 @@ def main() -> None:
         save_metrics(metrics)
 
         logger.info(
-            "Model evaluation completed successfully!"
+            "TF-IDF model evaluation completed successfully!"
         )
 
         logger.info(
